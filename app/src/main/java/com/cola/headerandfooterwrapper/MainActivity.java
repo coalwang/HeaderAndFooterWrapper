@@ -2,8 +2,10 @@ package com.cola.headerandfooterwrapper;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
@@ -14,7 +16,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mRecyclerView = (RecyclerView)findViewById(R.id.recycler_view);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplication(), 2);
+        mRecyclerView.setLayoutManager(staggeredGridLayoutManager);
         HeaderAndFooterWrapper wrapper = new HeaderAndFooterWrapper(new RecyclerViewAdapter());
         TextView headView1 = new TextView(getApplicationContext());
         headView1.setText("I am headerView1");

@@ -1,7 +1,9 @@
 package com.cola.headerandfooterwrapper;
 
 import android.support.annotation.NonNull;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -147,6 +149,56 @@ public class HeaderAndFooterWrapper extends RecyclerView.Adapter<RecyclerView.Vi
 
         public FooterViewHolder(View itemView) {
             super(itemView);
+        }
+    }
+
+    /**
+     * 解决不适配GridLayoutManager
+     * spanSize：表示一个item的跨度
+     * spanCount：表示表示列数
+     */
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        mInnerAdapter.onAttachedToRecyclerView(recyclerView);
+
+        // 拿到recyclerView设置的LayoutManager
+        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+        if (layoutManager instanceof GridLayoutManager){
+            final GridLayoutManager gridLayoutManager = (GridLayoutManager)layoutManager;
+            // 拿到SpanSizeLookup这个类
+            //GridLayoutManager.SpanSizeLookup spanSizeLookup = gridLayoutManager.getSpanSizeLookup();
+            gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                // 主要思想，根据position设置每条item的跨度
+                @Override
+                public int getSpanSize(int position) {
+                    int viewType = getItemViewType(position);  // 根据position拿到viewType
+                    if (mHeaderViewSparseArray.get(viewType) != null){  // 不为null，表明该位置的头布局
+                        return gridLayoutManager.getSpanCount();
+                    }else if (mFooterViewSparseArray.get(viewType) != null){
+                        return gridLayoutManager.getSpanCount();
+                    }else {
+                        return 1;
+                    }
+                }
+            });
+            recyclerView.setLayoutManager(gridLayoutManager);
+        }
+    }
+
+
+    /**
+     * 解决瀑布模型不适配的问题
+     */
+    @Override
+    public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
+        mInnerAdapter.onViewAttachedToWindow(holder);
+        int position = holder.getLayoutPosition();
+        if (isHeaderView(position) || isFooterView(position)){
+            ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
+            if (layoutParams != null && layoutParams instanceof StaggeredGridLayoutManager.LayoutParams){
+                StaggeredGridLayoutManager.LayoutParams layoutParams1 = (StaggeredGridLayoutManager.LayoutParams)layoutParams;
+                layoutParams1.setFullSpan(true);
+            }
         }
     }
 }
